@@ -1,3 +1,4 @@
+package VisitadorExtendido;
 public class OverseasOrder implements Order {
   private double orderAmount;
   private double additionalSH;

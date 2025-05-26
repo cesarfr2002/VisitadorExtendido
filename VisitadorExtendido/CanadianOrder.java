@@ -1,9 +1,10 @@
-public class NonCaliforniaOrder implements Order {
+package VisitadorExtendido;
+public class CanadianOrder implements Order {
   private double orderAmount;
 
-  public NonCaliforniaOrder() {
+  public CanadianOrder() {
   }
-  public NonCaliforniaOrder(double inp_orderAmount) {
+  public CanadianOrder(double inp_orderAmount) {
     orderAmount = inp_orderAmount;
   }
   public double getOrderAmount() {
