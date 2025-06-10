@@ -16,7 +16,7 @@ public class OverseasOrder implements Order {
   public double getAdditionalSH() {
     return additionalSH;
   }
-  public void accept(OrderVisitor v) {
+  public void accept(VisitorInterface v) { // Changed from OrderVisitor to VisitorInterface
     v.visit(this);
   }
 }

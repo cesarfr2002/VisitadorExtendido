@@ -16,7 +16,7 @@ public class CaliforniaOrder implements Order {
   public double getAdditionalTax() {
     return additionalTax;
   }
-  public void accept(OrderVisitor v) {
+  public void accept(VisitorInterface v) {
     v.visit(this);
   }
 }

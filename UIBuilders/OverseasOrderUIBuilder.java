@@ -10,25 +10,21 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.text.NumberFormatter;
 
-import VisitadorExtendido.CaliforniaOrder;
+import VisitadorExtendido.OverseasOrder;
 import VisitadorExtendido.Order;
 import VisitadorExtendido.OrderUIBuilder;
 
 public class OverseasOrderUIBuilder extends OrderUIBuilder {
     static OverseasOrderUIBuilder OVUIBuilder=new OverseasOrderUIBuilder();
-    JPanel form;
-    JFormattedTextField amount;
-    JFormattedTextField Overseastax;
+    private JPanel form;
+    private JFormattedTextField amount;
+    private JFormattedTextField Overseastax;
 
         private OverseasOrderUIBuilder(){
     
         }
     
 
-        static  OverseasOrderUIBuilder NCUIBuilder=new OverseasOrderUIBuilder();
-
-     
-    
        public static OverseasOrderUIBuilder getInstance(){
             return OVUIBuilder;
        }
@@ -45,10 +41,10 @@ public class OverseasOrderUIBuilder extends OrderUIBuilder {
                     form.setLayout(gridbag);
                     GridBagConstraints gbc = new GridBagConstraints();
 
-                    JLabel amountLabel=new JLabel("Order Amount");
-                    amount=new JFormattedTextField(numberFormatter);
-                    JLabel taxLabel=new JLabel("Ovserseas SH");
-                     Overseastax=new JFormattedTextField(numberFormatter);
+                    JLabel amountLabel=new JLabel("Order Amount (USD):");
+                    this.amount=new JFormattedTextField(numberFormatter);
+                    JLabel taxLabel=new JLabel("Shipping & Handling (USD):");
+                    this.Overseastax=new JFormattedTextField(numberFormatter);
                         gbc.insets.top = 5;
                         gbc.insets.bottom = 5;
                         gbc.insets.left = 5;
@@ -60,20 +56,20 @@ public class OverseasOrderUIBuilder extends OrderUIBuilder {
                         gbc.anchor = GridBagConstraints.WEST;
                         gbc.gridx = 1;
                         gbc.gridy = 0;
-                        gridbag.setConstraints(amount, gbc);
+                        gridbag.setConstraints(this.amount, gbc);
                         gbc.anchor = GridBagConstraints.EAST;
                         gbc.gridx = 0;
                         gbc.gridy = 1;
                         gridbag.setConstraints(taxLabel, gbc);
                         gbc.gridx = 1;
                         gbc.gridy = 1;
-                        gridbag.setConstraints(Overseastax, gbc);
-                        amount.setColumns(10);
-                        Overseastax.setColumns(10);
+                        gridbag.setConstraints(this.Overseastax, gbc);
+                        this.amount.setColumns(10);
+                        this.Overseastax.setColumns(10);
                    form.add(amountLabel);
-                   form.add(amount);
+                   form.add(this.amount);
                    form.add(taxLabel);
-                   form.add(Overseastax);
+                   form.add(this.Overseastax);
                    
                 };
         
@@ -96,12 +92,20 @@ public class OverseasOrderUIBuilder extends OrderUIBuilder {
 
         @Override
         public Order getFieldsValue() {
-            // TODO Auto-generated method stub
                   Double value=(Double) amount.getValue();
-                  amount.setValue(0);
-                  Double taxValue=(Double) Overseastax.getValue();
+                  amount.setValue(0); 
+                  Double shValue=(Double) Overseastax.getValue();
                   Overseastax.setValue(0);
-                  return new CaliforniaOrder(value,taxValue);
+                  return new OverseasOrder(value, shValue);
             
         };
+        
+        @Override
+        public void setFieldsValue(Order order) {
+            if (order instanceof OverseasOrder) {
+                OverseasOrder osOrder = (OverseasOrder) order;
+                amount.setValue(osOrder.getOrderAmount());
+                Overseastax.setValue(osOrder.getAdditionalSH());
+            }
+        }
 }

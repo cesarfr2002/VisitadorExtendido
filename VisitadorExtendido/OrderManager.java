@@ -12,6 +12,7 @@ public class OrderManager extends JFrame {
   public static final String newline = "\n";
   public static final String GET_TOTAL = "Get Total";
   public static final String CREATE_ORDER = "Create Order";
+  public static final String EDIT_ORDER = "Edit Order";
   public static final String EXIT = "Exit";
   public static final String CA_ORDER = "California Order";
   public static final String NON_CA_ORDER = 
@@ -28,13 +29,13 @@ public class OrderManager extends JFrame {
   //Panel donde se anadira el formulario dependiendo de la orden
   private JPanel orderForm;
 
-  private OrderVisitor objVisitor;
+  private OrderProcessorInterface orderProcessor; // Changed from OrderVisitor
 
   public OrderManager() {
     super("Visitor Pattern - Example");
 
-    //Create the visitor instance
-    objVisitor = new OrderVisitor();
+    //Create the processor instance
+    orderProcessor = new OrderVisitorAdapter(); // Changed from new OrderVisitor()
 
     cmbOrderType = new JComboBox<String>();
     cmbOrderType.setActionCommand(comboBox);
@@ -47,20 +48,21 @@ public class OrderManager extends JFrame {
     
     
 
-    //Create the open button
-    JButton getTotalButton =
-      new JButton(OrderManager.GET_TOTAL);
+    //Create the buttons
+    JButton getTotalButton = new JButton(OrderManager.GET_TOTAL);
     getTotalButton.setMnemonic(KeyEvent.VK_G);
-    JButton createOrderButton =
-      new JButton(OrderManager.CREATE_ORDER);
-    getTotalButton.setMnemonic(KeyEvent.VK_C);
+    JButton createOrderButton = new JButton(OrderManager.CREATE_ORDER);
+    createOrderButton.setMnemonic(KeyEvent.VK_C);
+    JButton editOrderButton = new JButton(OrderManager.EDIT_ORDER);
+    editOrderButton.setMnemonic(KeyEvent.VK_E);
     JButton exitButton = new JButton(OrderManager.EXIT);
     exitButton.setMnemonic(KeyEvent.VK_X);
-    ButtonHandler objButtonHandler = new ButtonHandler(this);
 
+    ButtonHandler objButtonHandler = new ButtonHandler(this);
 
     getTotalButton.addActionListener(objButtonHandler);
     createOrderButton.addActionListener(objButtonHandler);
+    editOrderButton.addActionListener(objButtonHandler);
     cmbOrderType.addActionListener(objButtonHandler);
     exitButton.addActionListener(new ButtonHandler());
 
@@ -73,16 +75,16 @@ public class OrderManager extends JFrame {
     GridBagConstraints gbc2 = new GridBagConstraints();
     panel.add(getTotalButton);
     panel.add(createOrderButton);
+    panel.add(editOrderButton);
     panel.add(exitButton);
-    gbc2.anchor = GridBagConstraints.EAST;
+    
     gbc2.gridx = 0;
-    gbc2.gridy = 0;
     gridbag2.setConstraints(createOrderButton, gbc2);
     gbc2.gridx = 1;
-    gbc2.gridy = 0;
     gridbag2.setConstraints(getTotalButton, gbc2);
     gbc2.gridx = 2;
-    gbc2.gridy = 0;
+    gridbag2.setConstraints(editOrderButton, gbc2);
+    gbc2.gridx = 3;
     gridbag2.setConstraints(exitButton, gbc2);
 
     //****************************************************
@@ -158,32 +160,62 @@ public class OrderManager extends JFrame {
     orderForm.revalidate(); // Revalidate the layout
     orderForm.repaint();
   }
-  public OrderVisitor getOrderVisitor() {
-    return objVisitor;
+  public OrderProcessorInterface getOrderProcessor() { // Changed from getOrderVisitor
+    return orderProcessor;
   }
   public String getOrderType() {
     return (String) cmbOrderType.getSelectedItem();
   }
- 
   
+  // Método para acceder al combo desde ButtonHandler
+  public JComboBox<String> getOrderTypeCombo() {
+    return cmbOrderType;
+  }
+ 
 
 } // End of class OrderManager
 
 class ButtonHandler implements ActionListener {
   OrderManager objOrderManager;
+  private int editingOrderIndex = -1; // Para trackear qué orden estamos editando
+  
   public void actionPerformed(ActionEvent e) {
     String totalResult = null;
 
     if (e.getActionCommand().equals(OrderManager.EXIT)) {
       System.exit(1);
     }
-    if (e.getActionCommand().equals(OrderManager.CREATE_ORDER)
-        ) {
-      //get input values
-     
-
-      
+    
+    if (e.getActionCommand().equals(OrderManager.CREATE_ORDER)) {
+      if (editingOrderIndex >= 0) {
+        // Estamos editando una orden existente
+        updateExistingOrder();
+      } else {
+        // Crear nueva orden
+        createNewOrder();
+      }
     }
+    
+    if (e.getActionCommand().equals(OrderManager.EDIT_ORDER)) {
+      OrderProcessorInterface processor = objOrderManager.getOrderProcessor(); // Changed from OrderVisitor
+      
+      if (processor.getOrderCount() == 0) {
+        JOptionPane.showMessageDialog(objOrderManager, 
+          "No hay órdenes para editar.", 
+          "Sin órdenes", 
+          JOptionPane.INFORMATION_MESSAGE);
+        return;
+      }
+      
+      OrderRecoveryDialog dialog = new OrderRecoveryDialog(objOrderManager, processor);
+      dialog.setVisible(true);
+      
+      if (dialog.isOrderSelected()) {
+        OrderRecoveryDialog.OrderItem item = dialog.getSelectedOrderItem();
+        loadOrderForEditing(item);
+      }
+    }
+
     //Aqui se crea el panel al elegir  el tipo de orden a crear
     if(e.getActionCommand().equals(OrderManager.comboBox)){
       String selectedOrderType = (String) objOrderManager.getOrderType();
@@ -192,46 +224,94 @@ class ButtonHandler implements ActionListener {
       director.setOrderForm(builder);
       director.build();
       objOrderManager.drawOrderPane(builder.getPanel());
-      try{
-      
-      }catch(Exception es ){
-        es.printStackTrace();
-      }
+      // try-catch block was empty, can be removed or completed if error handling is needed
     }
 
     if (e.getActionCommand().equals(OrderManager.GET_TOTAL)) {
-      //Get the Visitor
-      OrderVisitor visitor =
-        objOrderManager.getOrderVisitor();
-      totalResult = Double.toString(visitor.getOrderTotal());
+      //Get the Processor
+      OrderProcessorInterface processor = objOrderManager.getOrderProcessor(); // Changed from OrderVisitor
+      totalResult = Double.toString(processor.getOrderTotal()); // Changed from visitor.getOrderTotal()
       totalResult = " Orders Total = " + totalResult;
-      
+      // Display totalResult, e.g., in a JOptionPane or a status bar
+      JOptionPane.showMessageDialog(objOrderManager, totalResult, "Total de Órdenes", JOptionPane.INFORMATION_MESSAGE);
     }
     
   }
 
-  public Order createOrder(String orderType,
-      double orderAmount, double tax, double SH) {
-    if (orderType.equalsIgnoreCase(OrderManager.CA_ORDER)) {
-      return new CaliforniaOrder(orderAmount, tax);
+  private void createNewOrder() {
+    String selectedOrderType = objOrderManager.getOrderType();
+    OrderUIBuilder builder = OrderUIBuilderFactory.getUI(selectedOrderType);
+    
+    if (builder != null) {
+      Order newOrder = builder.getFieldsValue();
+      if (newOrder != null) {
+        // Agregar al processor para procesamiento y almacenamiento
+        objOrderManager.getOrderProcessor().processOrder(newOrder); // Changed from newOrder.accept(objOrderManager.getOrderVisitor());
+        
+        JOptionPane.showMessageDialog(objOrderManager,
+          "Orden creada exitosamente.",
+          "Orden Creada",
+          JOptionPane.INFORMATION_MESSAGE);
+      }
     }
-    if (orderType.equalsIgnoreCase(
-      OrderManager.NON_CA_ORDER)) {
-      return new NonCaliforniaOrder(orderAmount);
-    }
-    if (orderType.equalsIgnoreCase(
-          OrderManager.OVERSEAS_ORDER)) {
-      return new OverseasOrder(orderAmount, SH);
-    }
-    if (orderType.equalsIgnoreCase(
-        OrderManager.CANADIAN_ORDER)) {
-      return new CanadianOrder(orderAmount);
-    }
-    return null;
+    editingOrderIndex = -1; // Reset editing mode
   }
 
-  public ButtonHandler() {
+  private void updateExistingOrder() {
+    String selectedOrderType = objOrderManager.getOrderType();
+    OrderUIBuilder builder = OrderUIBuilderFactory.getUI(selectedOrderType);
+    
+    if (builder != null && editingOrderIndex >= 0) {
+      Order updatedOrder = builder.getFieldsValue();
+      if (updatedOrder != null) {
+        OrderProcessorInterface processor = objOrderManager.getOrderProcessor(); // Changed from OrderVisitor
+        processor.updateOrder(editingOrderIndex, updatedOrder);
+        
+        JOptionPane.showMessageDialog(objOrderManager,
+          "Orden actualizada exitosamente.",
+          "Orden Actualizada",
+          JOptionPane.INFORMATION_MESSAGE);
+      }
+    }
+    editingOrderIndex = -1;
+  }
 
+  private void loadOrderForEditing(OrderRecoveryDialog.OrderItem item) {
+    editingOrderIndex = item.getIndex();
+    Order order = item.getOrder();
+    String orderType = item.getType();
+    
+    // Cambiar el combo al tipo de orden correcto
+    JComboBox<String> combo = objOrderManager.getOrderTypeCombo();
+    if (orderType.equals("California Order")) {
+      combo.setSelectedItem(OrderManager.CA_ORDER);
+    } else if (orderType.equals("Non-California Order")) {
+      combo.setSelectedItem(OrderManager.NON_CA_ORDER);
+    } else if (orderType.equals("Overseas Order")) {
+      combo.setSelectedItem(OrderManager.OVERSEAS_ORDER);
+    } else if (orderType.equals("Canadian Order")) {
+      combo.setSelectedItem(OrderManager.CANADIAN_ORDER); // Corrected this line
+    }
+    // Cargar el formulario correspondiente
+    String selectedOrderType = objOrderManager.getOrderType();
+    OrderUIBuilder builder = OrderUIBuilderFactory.getUI(selectedOrderType);
+    OrderUIDirector director = new OrderUIDirector();
+    director.setOrderForm(builder);
+    director.build();
+    objOrderManager.drawOrderPane(builder.getPanel()); // Removed duplicated lines after this
+    
+    // Prellenar los campos con los datos de la orden
+    builder.setFieldsValue(order);
+    
+    JOptionPane.showMessageDialog(objOrderManager,
+      "Orden cargada para edición. Modifique los valores y presione 'Create Order' para guardar.",
+      "Editando Orden #" + (item.getIndex() + 1),
+      JOptionPane.INFORMATION_MESSAGE);
+  }
+
+  // Removed unused createOrder method
+
+  public ButtonHandler() {
   }
   public ButtonHandler(OrderManager inObjOrderManager) {
     objOrderManager = inObjOrderManager;

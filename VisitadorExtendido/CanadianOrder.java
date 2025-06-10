@@ -10,7 +10,7 @@ public class CanadianOrder implements Order {
   public double getOrderAmount() {
     return orderAmount;
   }
-  public void accept(OrderVisitor v) {
+  public void accept(VisitorInterface v) { 
     v.visit(this);
   }
 }

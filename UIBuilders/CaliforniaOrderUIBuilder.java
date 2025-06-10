@@ -18,11 +18,9 @@ public class CaliforniaOrderUIBuilder extends OrderUIBuilder  {
     // Aqui se aplica un singleton para CaliforniaOrderUIbuilder
     static CaliforniaOrderUIBuilder CUIBuilder=new CaliforniaOrderUIBuilder();
 
-        JPanel form;
-        JFormattedTextField amount;
-        JFormattedTextField tax;
-        // Aqui se aplica un singleton para CaliforniaOrderUIbuilder
-        static  CaliforniaOrderUIBuilder NCUIBuilder=new  CaliforniaOrderUIBuilder();
+    private JPanel form;
+    private JFormattedTextField amount;
+    private JFormattedTextField tax;
 
         private  CaliforniaOrderUIBuilder(){
     
@@ -44,10 +42,10 @@ public class CaliforniaOrderUIBuilder extends OrderUIBuilder  {
                     form.setLayout(gridbag);
                     GridBagConstraints gbc = new GridBagConstraints();
 
-                    JLabel amountLabel=new JLabel("Order Amount");
-                    amount=new JFormattedTextField(numberFormatter);
-                    JLabel taxLabel=new JLabel("California Tax");
-                     tax=new JFormattedTextField(numberFormatter);
+                    JLabel amountLabel=new JLabel("Order Amount (USD):");
+                    this.amount=new JFormattedTextField(numberFormatter);
+                    JLabel taxLabel=new JLabel("California Tax (USD):");
+                    this.tax=new JFormattedTextField(numberFormatter);
                         gbc.insets.top = 5;
                         gbc.insets.bottom = 5;
                         gbc.insets.left = 5;
@@ -59,20 +57,20 @@ public class CaliforniaOrderUIBuilder extends OrderUIBuilder  {
                         gbc.anchor = GridBagConstraints.WEST;
                         gbc.gridx = 1;
                         gbc.gridy = 0;
-                        gridbag.setConstraints(amount, gbc);
+                        gridbag.setConstraints(this.amount, gbc);
                         gbc.anchor = GridBagConstraints.EAST;
                         gbc.gridx = 0;
                         gbc.gridy = 1;
                         gridbag.setConstraints(taxLabel, gbc);
                         gbc.gridx = 1;
                         gbc.gridy = 1;
-                        gridbag.setConstraints(tax, gbc);
-                        amount.setColumns(10);
-                        tax.setColumns(10);
+                        gridbag.setConstraints(this.tax, gbc);
+                        this.amount.setColumns(10);
+                        this.tax.setColumns(10);
                    form.add(amountLabel);
-                   form.add(amount);
+                   form.add(this.amount);
                    form.add(taxLabel);
-                   form.add(tax);
+                   form.add(this.tax);
                    
                 };
         
@@ -101,5 +99,14 @@ public class CaliforniaOrderUIBuilder extends OrderUIBuilder  {
               tax.setValue(0);
               return new CaliforniaOrder(value,taxValue);
         };
+        
+       
+        public void setFieldsValue(Order order) {
+            if (order instanceof CaliforniaOrder) {
+                CaliforniaOrder caOrder = (CaliforniaOrder) order;
+                amount.setValue(caOrder.getOrderAmount());
+                tax.setValue(caOrder.getAdditionalTax());
+            }
+        }
 	
 }

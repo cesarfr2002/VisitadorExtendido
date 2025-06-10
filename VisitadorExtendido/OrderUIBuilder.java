@@ -12,8 +12,8 @@ public abstract void createOrderFields();
 public abstract void initializeOrderFields();
 //Este metodo hace que el builder retorne los valores de sus campos como un objeto Order
 public abstract Order getFieldsValue();
-
-
+//Este metodo permite prellenar los campos para editar una orden existente
+public abstract void setFieldsValue(Order order);
 
 
 
