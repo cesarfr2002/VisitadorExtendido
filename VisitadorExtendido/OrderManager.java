@@ -1,10 +1,9 @@
 package VisitadorExtendido;
-import java.util.*;
-import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+import Fabricas.OrderProcessorFactory;
 import Fabricas.OrderUIBuilderFactory;
 import UIBuilders.OrderUIDirector;
 
@@ -35,7 +34,7 @@ public class OrderManager extends JFrame {
     super("Visitor Pattern - Example");
 
     //Create the processor instance
-    orderProcessor = new OrderVisitorAdapter(); // Changed from new OrderVisitor()
+    orderProcessor = OrderProcessorFactory.createOrderProcessor();
 
     cmbOrderType = new JComboBox<String>();
     cmbOrderType.setActionCommand(comboBox);

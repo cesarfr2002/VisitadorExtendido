@@ -1,5 +1,5 @@
 package UIBuilders;
-import java.awt.Container;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.text.NumberFormat;
@@ -8,7 +8,6 @@ import java.util.Locale;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.text.NumberFormatter;
 
 import VisitadorExtendido.NonCaliforniaOrder;

@@ -1,7 +1,5 @@
 package UIBuilders;
 
-import javax.swing.JPanel;
-
 import VisitadorExtendido.OrderUIBuilder;
 
 public class OrderUIDirector {
