@@ -32,41 +32,18 @@ public class OrderRecoveryDialog extends JDialog {
 
     private void populateOrderComboBox() {
         orderComboBox.removeAllItems();
-        
+        OrderInfoVisitor infoVisitor = new OrderInfoVisitor();
+
         for (int i = 0; i < processor.getOrderCount(); i++) {
             Order order = processor.getOrder(i);
-            String orderType = getOrderTypeName(order);
-            double orderAmount = getOrderAmount(order);
-            
+            order.accept(infoVisitor);
+
+            String orderType = infoVisitor.getOrderTypeName();
+            double orderAmount = infoVisitor.getOrderAmount();
+
             OrderItem item = new OrderItem(i, order, orderType, orderAmount);
             orderComboBox.addItem(item);
         }
-    }
-
-    private String getOrderTypeName(Order order) {
-        if (order instanceof CaliforniaOrder) return "California Order";
-        if (order instanceof NonCaliforniaOrder) return "Non-California Order";
-        if (order instanceof OverseasOrder) return "Overseas Order";
-        if (order instanceof CanadianOrder) return "Canadian Order";
-        return "Unknown Order";
-    }
-
-    private double getOrderAmount(Order order) {
-        if (order instanceof CaliforniaOrder) {
-            CaliforniaOrder co = (CaliforniaOrder) order;
-            return co.getOrderAmount() + co.getAdditionalTax();
-        }
-        if (order instanceof NonCaliforniaOrder) {
-            return ((NonCaliforniaOrder) order).getOrderAmount();
-        }
-        if (order instanceof OverseasOrder) {
-            OverseasOrder oo = (OverseasOrder) order;
-            return oo.getOrderAmount() + oo.getAdditionalSH();
-        }
-        if (order instanceof CanadianOrder) {
-            return ((CanadianOrder) order).getOrderAmount();
-        }
-        return 0.0;
     }
 
     private void setupLayout() {

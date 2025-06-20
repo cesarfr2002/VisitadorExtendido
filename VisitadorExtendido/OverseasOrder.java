@@ -1,5 +1,5 @@
 package VisitadorExtendido;
-public class OverseasOrder implements Order {
+public class OverseasOrder extends Order {
   private double orderAmount;
   private double additionalSH;
 
@@ -16,7 +16,9 @@ public class OverseasOrder implements Order {
   public double getAdditionalSH() {
     return additionalSH;
   }
-  public void accept(VisitorInterface v) { // Changed from OrderVisitor to VisitorInterface
-    v.visit(this);
+
+  @Override
+  public void accept(VisitorInterface visitor) {
+    visitor.visit(this);
   }
 }

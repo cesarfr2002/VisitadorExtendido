@@ -1,5 +1,5 @@
 package VisitadorExtendido;
-public class CaliforniaOrder implements Order {
+public class CaliforniaOrder extends Order {
   private double orderAmount;
   private double additionalTax;
 
@@ -16,8 +16,10 @@ public class CaliforniaOrder implements Order {
   public double getAdditionalTax() {
     return additionalTax;
   }
-  public void accept(VisitorInterface v) {
-    v.visit(this);
+
+  @Override
+  public void accept(VisitorInterface visitor) {
+    visitor.visit(this);
   }
 }
 

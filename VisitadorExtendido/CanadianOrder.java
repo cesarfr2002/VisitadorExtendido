@@ -1,5 +1,5 @@
 package VisitadorExtendido;
-public class CanadianOrder implements Order {
+public class CanadianOrder extends Order {
   private double orderAmount;
 
   public CanadianOrder() {

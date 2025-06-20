@@ -1,5 +1,5 @@
 package VisitadorExtendido;
-public class NonCaliforniaOrder implements Order {
+public class NonCaliforniaOrder extends Order {
   private double orderAmount;
 
   public NonCaliforniaOrder() {
